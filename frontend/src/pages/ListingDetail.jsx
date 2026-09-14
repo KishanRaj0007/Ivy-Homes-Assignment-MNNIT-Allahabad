@@ -11,7 +11,7 @@ export default function ListingDetail() {
   useEffect(() => {
     const fetchDetail = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/v1/listings/${id}`, {
+        const response = await fetch(`https://ivy-backend-app.onrender.com/api/v1/listings/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();

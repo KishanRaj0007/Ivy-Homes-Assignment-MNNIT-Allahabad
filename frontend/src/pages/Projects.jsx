@@ -7,7 +7,7 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/projects?page=1', {
+    fetch('https://ivy-backend-app.onrender.com/api/v1/projects?page=1', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())

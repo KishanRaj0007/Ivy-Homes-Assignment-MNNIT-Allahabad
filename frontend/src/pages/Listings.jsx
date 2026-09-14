@@ -27,7 +27,7 @@ export default function Listings() {
 
       console.log("Fetching from BFF with params:", queryParams.toString());
 
-      const response = await fetch(`http://localhost:8080/api/v1/listings?${queryParams.toString()}`, {
+      const response = await fetch(`https://ivy-backend-app.onrender.com/api/v1/listings?${queryParams.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
