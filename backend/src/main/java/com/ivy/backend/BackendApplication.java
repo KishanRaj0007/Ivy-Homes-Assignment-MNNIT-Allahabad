@@ -18,14 +18,15 @@ public class BackendApplication {
         return new RestTemplate();
     }
 
-    // Allow our React frontend (which will run on port 5173) to talk to this backend
+    // Allow our React frontend to talk to this backend
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173")
+                        // THE FIX: Allow your live Vercel frontend to communicate with Render
+                        .allowedOriginPatterns("*") 
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
             }
