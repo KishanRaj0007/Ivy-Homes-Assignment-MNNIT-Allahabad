@@ -1,0 +1,125 @@
+{
+  "api_key": "IVY26-EAC7A0516D5D",
+  "candidate": {
+    "name": "KISHAN RAJ",
+    "email": "kishan.20230027@mnnit.ac.in",
+    "repo_url": "https://github.com/KishanRaj0007/Ivy-Homes-Assignment-MNNIT-Allahabad",
+    "demo_url": "DEPLOYMENT_URL"
+  },
+  "answers": {
+    "total_listing_records": 3800,
+    "unique_properties": 50,
+    "active_listings": 3344,
+    "corrupt_listing_ids": [],
+    "total_monthly_rent": 3291500,
+    "avg_price_per_sqft_2bhk": 14729.1,
+    "costliest_project": {
+      "project_id": "P40035",
+      "price_max_inr": 937000000
+    },
+    "listings_last_7_days": 76,
+    "fake_listing_ids": [],
+    "projects_with_wrong_listing_count": 387
+  },
+  "findings": [
+    {
+      "endpoint": "/auth/login",
+      "category": "auth",
+      "documented": "API key should be appended as a query parameter.",
+      "actual": "The endpoint requires the API key to be passed in an 'X-API-Key' header.",
+      "how_found": "Received 'missing X-API-Key header' 400 Bad Request during initial Python extraction.",
+      "impact": "Authentication is impossible following the documentation.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/auth/login",
+      "category": "auth",
+      "documented": "Returns the authentication token under the key 'token'.",
+      "actual": "The token is returned under the key 'access_token'.",
+      "how_found": "Encountered a KeyError when parsing 'token' from the 200 OK response.",
+      "impact": "Clients will crash when attempting to store the session token.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/auth/login",
+      "category": "auth",
+      "documented": "Tokens are valid for 24 hours. There is no refresh flow.",
+      "actual": "Tokens expire in 900 seconds (15 minutes), and the 401 error explicitly instructs the use of a refresh_token flow.",
+      "how_found": "Received a 401 error deep into the pagination loop with an explicit refresh error message.",
+      "impact": "Users will be unexpectedly logged out after 15 minutes.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/*",
+      "category": "pagination",
+      "documented": "Maximum limit is 200.",
+      "actual": "The API silently enforces a hard maximum limit of 50 records per page.",
+      "how_found": "Requested limit=200, but only received arrays of exactly 50 records across thousands of requests.",
+      "impact": "Calculating total pages using a limit of 200 will result in scraping only 25% of the database.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/*",
+      "category": "pagination",
+      "documented": "Standard pagination where reading 'total' and dividing by 'limit' yields the end.",
+      "actual": "The API never returns an empty array for out-of-bounds pages. It infinitely loops or pads data.",
+      "how_found": "A while-loop scraper ran infinitely, pulling over 1.1 million records from a database of 3,800.",
+      "impact": "Standard scrapers will become trapped in an infinite loop.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/*",
+      "category": "completeness",
+      "documented": "The 'total' field represents the exact number of matching records.",
+      "actual": "The API pads the final page with duplicates to satisfy the enforced 50-limit quota, returning more records than the 'total' claims.",
+      "how_found": "The server reported 3768 total listings, but paging to the calculated end yielded exactly 3800 records.",
+      "impact": "Data downstream will contain ghost records or duplicates.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "filters",
+      "documented": "Inactive, expired and withdrawn listings are excluded server side.",
+      "actual": "The server returns listings regardless of status; 'is_live' must be filtered client-side.",
+      "how_found": "Comparing total retrieved listings (3800) against listings where is_live is true (3344).",
+      "impact": "The UI will display dead properties unless manually filtered.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "timestamps",
+      "documented": "Timestamps are ISO 8601, UTC, Z suffix, everywhere in the API.",
+      "actual": "Listing posted_at timestamps omit the 'Z' suffix.",
+      "how_found": "Inspected the raw JSON response payload during manual data verification.",
+      "impact": "Timezone assumptions will break time-based filters (like 'last 7 days').",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "duplicates",
+      "documented": "Every listing corresponds to exactly one physical property.",
+      "actual": "The dataset contains only 50 distinct properties, each duplicated 76 times to artificially inflate the database.",
+      "how_found": "Deduplicated records based on coordinates, area, and floor in Python.",
+      "impact": "Analytics like 'average price' will be skewed heavily without deduplication.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/projects",
+      "category": "units",
+      "documented": "Money is in Indian rupees, integer, everywhere in the API.",
+      "actual": "Project price_min and price_max are returned as floats representing Lakhs and Crores.",
+      "how_found": "Observed max prices like 1.95 and min prices like 66.1 for multi-million rupee projects.",
+      "impact": "Financial calculations and UI displays will be massively incorrect.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/projects",
+      "category": "consistency",
+      "documented": "total_listings in projects always agrees with listings available.",
+      "actual": "The stated total_listings count is mathematically incorrect for 387 projects.",
+      "how_found": "Grouped actual listings by project_id and compared against the project's stated total_listings field.",
+      "impact": "Dashboard metrics relying on project summaries will be false.",
+      "evidence": []
+    }
+  ]
+}

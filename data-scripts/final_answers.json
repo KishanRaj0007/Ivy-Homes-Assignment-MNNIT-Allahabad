@@ -1,0 +1,15 @@
+{
+  "total_listing_records": 3800,
+  "active_listings": 3344,
+  "unique_properties": 50,
+  "corrupt_listing_ids": [],
+  "total_monthly_rent": 3291500,
+  "costliest_project": {
+    "project_id": "P40035",
+    "price_max_inr": 937000000
+  },
+  "listings_last_7_days": 76,
+  "fake_listing_ids": [],
+  "avg_price_per_sqft_2bhk": 14729.1,
+  "projects_with_wrong_listing_count": 387
+}

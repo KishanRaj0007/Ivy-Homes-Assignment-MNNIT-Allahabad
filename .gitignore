@@ -1,0 +1,25 @@
+# General
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Backend (Java/Spring Boot)
+backend/target/
+backend/.mvn/
+backend/*.jar
+backend/src/main/resources/application-secret.properties
+
+# Data Scripts (Python)
+data-scripts/__pycache__/
+data-scripts/*.pyc
+data-scripts/venv/
+data-scripts/.env
+# Optional: Ignore the massive raw data file to keep the repo clean
+data-scripts/offline_data.json
